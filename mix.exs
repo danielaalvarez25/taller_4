@@ -12,10 +12,14 @@ defmodule TallerElixir.MixProject do
   end
 
   def application do
-    [
-      mod: {TallerElixir, []},
-      extra_applications: [:logger]
-    ]
+    if Mix.env() == :test do
+      [extra_applications: [:logger]]
+    else
+      [
+        mod: {TallerElixir, []},
+        extra_applications: [:logger]
+      ]
+    end
   end
 
   defp deps do

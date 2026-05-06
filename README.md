@@ -1,21 +1,36 @@
 # TallerElixir
 
-**TODO: Add description**
+# Taller 4 - Structs, Mapas y Manejo de Archivos en Elixir
 
-## Installation
+  ## Integrantes
+- Daniela Alvarez Acosta
+- Juan jose Gomez Martinez
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `taller_elixir` to your list of dependencies in `mix.exs`:
+## Descripción de la solución
+Se desarrollaron dos sistemas en Elixir organizados en un proyecto Mix:
 
-```elixir
-def deps do
-  [
-    {:taller_elixir, "~> 0.1.0"}
-  ]
-end
-```
+El primero es un sistema de gestión de socios para un gimnasio, donde se pueden
+crear socios, inscribirlos en clases y consultar información. Los datos se guardan
+en un archivo CSV que se carga al iniciar y se actualiza automáticamente.
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/taller_elixir>.
+El segundo es un sistema de inventario de productos con operaciones CRUD y consultas
+funcionales como agrupar por precio, filtrar por vocales en el nombre y obtener los
+productos más caros. Los datos se guardan en un archivo JSON usando la librería Jason.
 
+## Aprendizajes
+- Uso de structs y mapas en Elixir para modelar entidades del mundo real
+- Manejo de archivos CSV y JSON para persistencia de datos
+- Organización de proyectos con Mix y Application
+- Manejo de errores con tuplas {:ok, resultado} y {:error, motivo}
+- Uso de Enum para consultas funcionales sobre colecciones
+- Separación de responsabilidades en módulos independientes
+- Pruebas unitarias con ExUnit
+
+## Uso de Inteligencia Artificial
+Se utilizó inteligencia artificial como apoyo durante el desarrollo del taller.
+La IA nos ayudo a:
+- Estructurar los módulos siguiendo buenas prácticas de Elixir
+- Entender el manejo de archivos CSV y JSON
+- Organizar el proyecto con Mix y Application
+- Identificar y corregir errores de compilación
+- Sugerir el manejo de errores con tuplas y separación de responsabilidades

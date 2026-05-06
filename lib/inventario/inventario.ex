@@ -1,81 +1,90 @@
-defmodule Inventario do
-  alias Producto
+defmodule Inventario.Logica do
+  alias Inventario.Producto
+  alias Inventario.ArchivoJSON
 
-  def agregar(inventario, producto) do
-    if Map.has_key?(inventario, producto.codigo) do
-      {:error, "Código repetido"}
+  def agregar(productos, codigo, nombre, precio, cantidad) do
+    if Map.has_key?(productos, codigo) do
+      {:error, "Código duplicado"}
     else
-      {:ok, Map.put(inventario, producto.codigo, producto)}
+      case Producto.nuevo(codigo, nombre, precio, cantidad) do
+        {:ok, prod} ->
+          nuevos = Map.put(productos, codigo, prod)
+          ArchivoJSON.guardar(nuevos)
+          {:ok, nuevos}
+        {:error, razon} -> {:error, razon}
+      end
     end
   end
 
-  def actualizar(inventario, codigo, cambios) do
-    case Map.get(inventario, codigo) do
+  def actualizar(productos, codigo, nombre, precio, cantidad) do
+    case Map.get(productos, codigo) do
       nil -> {:error, "Producto no encontrado"}
-      prod ->
-        actualizado = Map.merge(prod, cambios)
-        {:ok, Map.put(inventario, codigo, actualizado)}
+      _ ->
+        case Producto.nuevo(codigo, nombre, precio, cantidad) do
+          {:ok, prod} ->
+            nuevos = Map.put(productos, codigo, prod)
+            ArchivoJSON.guardar(nuevos)
+            {:ok, nuevos}
+          {:error, razon} -> {:error, razon}
+        end
     end
   end
 
-  def eliminar(inventario, codigo) do
-    {:ok, Map.delete(inventario, codigo)}
-  end
-
-  def listar(inventario) do
-    Map.values(inventario)
-  end
-
-  defmodule Inventario do
-    # Reporte 1: productos con al menos dos vocales en el nombre
-    def productos_con_dos_vocales(inventario) do
-      inventario
-      |> Enum.filter(fn {_codigo, prod} ->
-        String.downcase(prod.nombre)
-        |> String.graphemes()
-        |> Enum.count(&(&1 in ["a","e","i","o","u"])) >= 2
-      end)
-      |> Enum.map(fn {c, p} -> {c, p.nombre} end)
-    end
-
-    # Reporte 2: productos cuyo nombre empieza y termina con la misma letra
-    def productos_misma_letra(inventario) do
-      inventario
-      |> Enum.filter(fn {_c, p} ->
-        nombre = String.downcase(p.nombre)
-        String.first(nombre) == String.last(nombre)
-      end)
-    end
-
-    # Reporte 3: productos por debajo de un precio dado
-    def productos_bajo_precio(inventario, limite) do
-      inventario
-      |> Enum.filter(fn {_c, p} -> p.precio < limite end)
-    end
-
-    # Reporte 4: los tres productos más caros
-    def top3_caros(inventario) do
-      inventario
-      |> Enum.sort_by(fn {_c, p} -> p.precio end, :desc)
-      |> Enum.take(3)
-    end
-
-    # Reporte 5: cadena con nombre y precio de productos entre dos valores
-    def productos_entre(inventario, min, max) do
-      inventario
-      |> Enum.filter(fn {_c, p} -> p.precio >= min and p.precio <= max end)
-      |> Enum.map(fn {_c, p} -> "#{p.nombre}: #{p.precio}" end)
-      |> Enum.join(", ")
-    end
-
-    # Reporte 6: agrupados por rango de precio
-    def productos_por_rango(inventario) do
-      %{
-        menores_50000: Enum.filter(inventario, fn {_c, p} -> p.precio < 50000 end),
-        entre_50000_100000: Enum.filter(inventario, fn {_c, p} -> p.precio >= 50000 and p.precio <= 100000 end),
-        mayores_100000: Enum.filter(inventario, fn {_c, p} -> p.precio > 100000 end)
-      }
+  def eliminar(productos, codigo) do
+    if Map.has_key?(productos, codigo) do
+      nuevos = Map.delete(productos, codigo)
+      ArchivoJSON.guardar(nuevos)
+      {:ok, nuevos}
+    else
+      {:error, "Producto no encontrado"}
     end
   end
 
+  def listar(productos), do: Map.values(productos)
+
+  def con_dos_vocales(productos) do
+    productos
+    |> Enum.filter(fn {_, p} ->
+      length(Regex.scan(~r/[aeiouáéíóúAEIOUÁÉÍÓÚ]/, p.nombre)) >= 2
+    end)
+    |> Enum.map(fn {c, p} -> {c, p.nombre} end)
+  end
+
+  def misma_letra_inicio_fin(productos) do
+    productos
+    |> Enum.filter(fn {_, p} ->
+      n = String.downcase(p.nombre) |> String.replace(" ", "")
+      String.first(n) == String.last(n)
+    end)
+    |> Enum.map(fn {c, p} -> {c, p.nombre} end)
+  end
+
+  def precio_menor_a(productos, valor) do
+    productos
+    |> Enum.filter(fn {_, p} -> p.precio < valor end)
+    |> Enum.map(fn {_, p} -> p end)
+  end
+
+  def top_tres_caros(productos) do
+    productos
+    |> Map.values()
+    |> Enum.sort_by(& &1.precio, :desc)
+    |> Enum.take(3)
+  end
+
+  def precio_entre(productos, min, max) do
+    productos
+    |> Enum.filter(fn {_, p} -> p.precio >= min and p.precio <= max end)
+    |> Enum.map(fn {_, p} -> "#{p.nombre} - #{p.precio}" end)
+    |> Enum.join(", ")
+  end
+
+  def agrupar_por_precio(productos) do
+    vals = Map.values(productos)
+    %{
+      menores_50000:      Enum.filter(vals, fn p -> p.precio < 50000 end),
+      entre_50000_100000: Enum.filter(vals, fn p -> p.precio >= 50000 and p.precio <= 100000 end),
+      mayores_100000:     Enum.filter(vals, fn p -> p.precio > 100000 end)
+    }
+  end
 end
